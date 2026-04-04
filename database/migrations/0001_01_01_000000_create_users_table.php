@@ -13,10 +13,21 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->string('member_id')->unique(); // SIPR26-XX-XXXX
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('phone')->nullable();
+            $table->string('title')->nullable();
+            $table->enum('role', ['admin', 'finance', 'secretary', 'member'])->default('member');
+            $table->boolean('locked')->default(false);
+            $table->string('gmail')->nullable();
+            $table->text('address')->nullable();
+            $table->string('google_id')->nullable();
+            $table->string('google_email')->nullable();
+            $table->enum('status', ['active', 'pending', 'removed'])->default('active');
+            $table->string('photo_path')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

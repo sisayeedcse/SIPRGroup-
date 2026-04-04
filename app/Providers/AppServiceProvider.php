@@ -2,6 +2,21 @@
 
 namespace App\Providers;
 
+use App\Models\Announcement;
+use App\Models\Document;
+use App\Models\Investment;
+use App\Models\Proposal;
+use App\Models\Transaction;
+use App\Models\User;
+use App\Models\Wallet;
+use App\Policies\AnnouncementPolicy;
+use App\Policies\DocumentPolicy;
+use App\Policies\InvestmentPolicy;
+use App\Policies\MemberPolicy;
+use App\Policies\ProposalPolicy;
+use App\Policies\TransactionPolicy;
+use App\Policies\WalletPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +34,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Gate::policy(Transaction::class, TransactionPolicy::class);
+        Gate::policy(User::class, MemberPolicy::class);
+        Gate::policy(Investment::class, InvestmentPolicy::class);
+        Gate::policy(Announcement::class, AnnouncementPolicy::class);
+        Gate::policy(Proposal::class, ProposalPolicy::class);
+        Gate::policy(Document::class, DocumentPolicy::class);
+        Gate::policy(Wallet::class, WalletPolicy::class);
+
+        Gate::define('viewReports', function (User $user): bool {
+            $role = $user->role->value ?? $user->role;
+
+            return in_array($role, ['admin', 'finance', 'secretary'], true);
+        });
+
+        Gate::define('viewActivityLog', function (User $user): bool {
+            $role = $user->role->value ?? $user->role;
+
+            return in_array($role, ['admin', 'finance', 'secretary'], true);
+        });
     }
 }

@@ -1,7 +1,124 @@
 <?php
 
+use App\Http\Controllers\Admin\ApprovalController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\SocialAuthController;
+use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\InvestmentController;
+use App\Http\Controllers\MemberController;
+use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\NoticeboardController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\WalletController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::redirect('/', '/dashboard');
+
+Route::middleware('guest')->group(function (): void {
+    Route::get('/login', [LoginController::class, 'show'])->name('login');
+    Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+
+    Route::get('/register', [RegisterController::class, 'show'])->name('register');
+    Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
+
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+
+    Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
+
+    Route::get('/auth/google/redirect', [SocialAuthController::class, 'redirectToGoogle'])->name('auth.google.redirect');
+    Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+
+    Route::get('/auth/link-invite', [SocialAuthController::class, 'showInviteLinkForm'])->name('auth.invite.link.show');
+    Route::post('/auth/link-invite', [SocialAuthController::class, 'linkInvite'])->name('auth.invite.link.store');
+});
+
+Route::middleware(['auth', 'active'])->group(function (): void {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    Route::get('/activities', [ActivityController::class, 'index'])->name('activities.index');
+
+    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
+    Route::get('/wallets', [WalletController::class, 'index'])->name('wallets.index');
+    Route::get('/members', [MemberController::class, 'index'])->name('members.index');
+    Route::get('/investments', [InvestmentController::class, 'index'])->name('investments.index');
+    Route::get('/investments/{investment}', [InvestmentController::class, 'show'])->name('investments.show');
+    Route::get('/noticeboard', [NoticeboardController::class, 'index'])->name('noticeboard.index');
+    Route::get('/proposals/{proposal}', [NoticeboardController::class, 'showProposal'])->name('proposals.show');
+    Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
+    Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
+    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::put('/notifications/{notificationId}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::put('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+
+    Route::post('/proposals', [NoticeboardController::class, 'storeProposal'])->name('proposals.store');
+    Route::post('/proposals/{proposal}/votes', [NoticeboardController::class, 'vote'])->name('proposals.vote');
+    Route::put('/proposals/{proposal}', [NoticeboardController::class, 'updateProposal'])->name('proposals.update');
+
+    Route::middleware('role:admin,finance,secretary')->group(function (): void {
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/transactions.csv', [ReportController::class, 'transactionsCsv'])->name('reports.transactions.csv');
+        Route::get('/reports/investments.csv', [ReportController::class, 'investmentsCsv'])->name('reports.investments.csv');
+        Route::get('/reports/wallet-passbook.pdf', [ReportController::class, 'walletPassbookPdf'])->name('reports.wallet.passbook.pdf');
+        Route::get('/reports/exports/{reportExport}/download', [ReportController::class, 'downloadExport'])->name('reports.exports.download');
+        Route::post('/reports/exports/transactions', [ReportController::class, 'requestTransactionsExport'])->name('reports.exports.transactions');
+        Route::post('/reports/exports/investments', [ReportController::class, 'requestInvestmentsExport'])->name('reports.exports.investments');
+        Route::post('/reports/exports/wallet-passbook', [ReportController::class, 'requestWalletPassbookExport'])->name('reports.exports.wallet-passbook');
+
+        Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
+        Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
+        Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
+
+        Route::post('/investments', [InvestmentController::class, 'store'])->name('investments.store');
+        Route::put('/investments/{investment}', [InvestmentController::class, 'update'])->name('investments.update');
+        Route::delete('/investments/{investment}', [InvestmentController::class, 'destroy'])->name('investments.destroy');
+        Route::post('/investments/{investment}/milestones', [InvestmentController::class, 'storeMilestone'])->name('investments.milestones.store');
+        Route::put('/investments/{investment}/milestones/{milestone}', [InvestmentController::class, 'updateMilestone'])->name('investments.milestones.update');
+        Route::delete('/investments/{investment}/milestones/{milestone}', [InvestmentController::class, 'destroyMilestone'])->name('investments.milestones.destroy');
+        Route::post('/investments/{investment}/collections', [InvestmentController::class, 'storeCollection'])->name('investments.collections.store');
+        Route::put('/investments/{investment}/collections/{collection}', [InvestmentController::class, 'updateCollection'])->name('investments.collections.update');
+        Route::delete('/investments/{investment}/collections/{collection}', [InvestmentController::class, 'destroyCollection'])->name('investments.collections.destroy');
+
+        Route::put('/proposals/{proposal}/status', [NoticeboardController::class, 'updateProposalStatus'])->name('proposals.status.update');
+        Route::put('/proposals/{proposal}/finalize', [NoticeboardController::class, 'finalizeProposal'])->name('proposals.finalize');
+
+        Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+    });
+
+    Route::middleware('role:admin,secretary')->group(function (): void {
+        Route::post('/announcements', [NoticeboardController::class, 'storeAnnouncement'])->name('announcements.store');
+        Route::put('/announcements/{announcement}', [NoticeboardController::class, 'updateAnnouncement'])->name('announcements.update');
+        Route::delete('/announcements/{announcement}', [NoticeboardController::class, 'destroyAnnouncement'])->name('announcements.destroy');
+
+        Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+    });
+
+    Route::middleware('role:admin')->group(function (): void {
+        Route::put('/members/{user}', [MemberController::class, 'update'])->name('members.update');
+    });
+
+    Route::get('/modules/{module}', [ModuleController::class, 'show'])
+        ->where('module', '[A-Za-z\-]+')
+        ->name('modules.show');
+
+    Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+});
+
+Route::middleware(['auth', 'active', 'role:admin'])->prefix('admin')->name('admin.')->group(function (): void {
+    Route::get('/pending-approvals', [ApprovalController::class, 'index'])->name('approvals.index');
+    Route::post('/pending-approvals/{approval}/approve', [ApprovalController::class, 'approve'])->name('approvals.approve');
+    Route::post('/pending-approvals/{approval}/reject', [ApprovalController::class, 'reject'])->name('approvals.reject');
 });
