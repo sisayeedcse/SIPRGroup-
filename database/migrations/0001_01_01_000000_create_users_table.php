@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('phone')->nullable();
             $table->string('title')->nullable();
-            $table->enum('role', ['admin', 'finance', 'secretary', 'member'])->default('member');
+            $table->enum('role', ['admin', 'finance', 'secretary', 'advisor', 'member'])->default('member');
             $table->boolean('locked')->default(false);
             $table->string('gmail')->nullable();
             $table->text('address')->nullable();

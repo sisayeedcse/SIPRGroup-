@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Enums\Role;
 use App\Models\Announcement;
 use App\Models\Document;
 use App\Models\Investment;
@@ -16,6 +17,7 @@ use App\Policies\MemberPolicy;
 use App\Policies\ProposalPolicy;
 use App\Policies\TransactionPolicy;
 use App\Policies\WalletPolicy;
+use App\Support\RoleAccess;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -43,15 +45,11 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Wallet::class, WalletPolicy::class);
 
         Gate::define('viewReports', function (User $user): bool {
-            $role = $user->role->value ?? $user->role;
-
-            return in_array($role, ['admin', 'finance', 'secretary'], true);
+            return RoleAccess::allows($user->role->value ?? $user->role, 'reports');
         });
 
         Gate::define('viewActivityLog', function (User $user): bool {
-            $role = $user->role->value ?? $user->role;
-
-            return in_array($role, ['admin', 'finance', 'secretary'], true);
+            return RoleAccess::allows($user->role->value ?? $user->role, 'activities');
         });
     }
 }

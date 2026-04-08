@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -42,5 +44,21 @@ class ProfileController extends Controller
         $user->update($payload);
 
         return back()->with('status', 'Profile updated.');
+    }
+
+    public function updatePassword(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $payload = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'new_password' => ['required', 'confirmed', Password::min(6), 'different:current_password'],
+        ]);
+
+        $user->update([
+            'password' => Hash::make($payload['new_password']),
+        ]);
+
+        return back()->with('status', 'Password changed successfully.');
     }
 }

@@ -1,11 +1,11 @@
 <?php
 
 use App\Http\Controllers\Admin\ApprovalController;
+use App\Http\Controllers\Admin\AccessControlController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
@@ -35,49 +35,46 @@ Route::middleware('guest')->group(function (): void {
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
-    Route::get('/auth/google/redirect', [SocialAuthController::class, 'redirectToGoogle'])->name('auth.google.redirect');
-    Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
-    Route::get('/auth/link-invite', [SocialAuthController::class, 'showInviteLinkForm'])->name('auth.invite.link.show');
-    Route::post('/auth/link-invite', [SocialAuthController::class, 'linkInvite'])->name('auth.invite.link.store');
 });
 
 Route::middleware(['auth', 'active'])->group(function (): void {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('option:dashboard')->name('dashboard');
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 
-    Route::get('/activities', [ActivityController::class, 'index'])->name('activities.index');
+    Route::get('/activities', [ActivityController::class, 'index'])->middleware('option:activities')->name('activities.index');
 
-    Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
-    Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
-    Route::get('/wallets', [WalletController::class, 'index'])->name('wallets.index');
-    Route::get('/members', [MemberController::class, 'index'])->name('members.index');
-    Route::get('/investments', [InvestmentController::class, 'index'])->name('investments.index');
-    Route::get('/investments/{investment}', [InvestmentController::class, 'show'])->name('investments.show');
-    Route::get('/noticeboard', [NoticeboardController::class, 'index'])->name('noticeboard.index');
-    Route::get('/proposals/{proposal}', [NoticeboardController::class, 'showProposal'])->name('proposals.show');
-    Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
-    Route::get('/documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
-    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-    Route::put('/notifications/{notificationId}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
-    Route::put('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+    Route::get('/transactions', [TransactionController::class, 'index'])->middleware('option:transactions')->name('transactions.index');
+    Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->middleware('option:transactions')->name('transactions.show');
+    Route::get('/wallets', [WalletController::class, 'index'])->middleware('option:wallets')->name('wallets.index');
+    Route::get('/members', [MemberController::class, 'index'])->middleware('option:members')->name('members.index');
+    Route::get('/investments', [InvestmentController::class, 'index'])->middleware('option:investments')->name('investments.index');
+    Route::get('/investments/{investment}', [InvestmentController::class, 'show'])->middleware('option:investments')->name('investments.show');
+    Route::get('/noticeboard', [NoticeboardController::class, 'index'])->middleware('option:noticeboard')->name('noticeboard.index');
+    Route::get('/proposals/{proposal}', [NoticeboardController::class, 'showProposal'])->middleware('option:noticeboard')->name('proposals.show');
+    Route::get('/documents', [DocumentController::class, 'index'])->middleware('option:documents')->name('documents.index');
+    Route::get('/documents/{document}', [DocumentController::class, 'show'])->middleware('option:documents')->name('documents.show');
+    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->middleware('option:documents')->name('documents.download');
+    Route::get('/notifications', [NotificationController::class, 'index'])->middleware('option:notifications')->name('notifications.index');
+    Route::put('/notifications/{notificationId}/read', [NotificationController::class, 'markRead'])->middleware('option:notifications')->name('notifications.read');
+    Route::put('/notifications/read-all', [NotificationController::class, 'markAllRead'])->middleware('option:notifications')->name('notifications.read-all');
+
+    Route::get('/reports', [ReportController::class, 'index'])->middleware('option:reports')->name('reports.index');
+    Route::get('/reports/transactions.csv', [ReportController::class, 'transactionsCsv'])->middleware('option:reports')->name('reports.transactions.csv');
+    Route::get('/reports/investments.csv', [ReportController::class, 'investmentsCsv'])->middleware('option:reports')->name('reports.investments.csv');
+    Route::get('/reports/wallet-passbook.pdf', [ReportController::class, 'walletPassbookPdf'])->middleware('option:reports')->name('reports.wallet.passbook.pdf');
+    Route::get('/reports/exports/{reportExport}/download', [ReportController::class, 'downloadExport'])->middleware('option:reports')->name('reports.exports.download');
+    Route::post('/reports/exports/transactions', [ReportController::class, 'requestTransactionsExport'])->middleware('option:reports')->name('reports.exports.transactions');
+    Route::post('/reports/exports/investments', [ReportController::class, 'requestInvestmentsExport'])->middleware('option:reports')->name('reports.exports.investments');
+    Route::post('/reports/exports/wallet-passbook', [ReportController::class, 'requestWalletPassbookExport'])->middleware('option:reports')->name('reports.exports.wallet-passbook');
 
     Route::post('/proposals', [NoticeboardController::class, 'storeProposal'])->name('proposals.store');
     Route::post('/proposals/{proposal}/votes', [NoticeboardController::class, 'vote'])->name('proposals.vote');
     Route::put('/proposals/{proposal}', [NoticeboardController::class, 'updateProposal'])->name('proposals.update');
 
     Route::middleware('role:admin,finance,secretary')->group(function (): void {
-        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-        Route::get('/reports/transactions.csv', [ReportController::class, 'transactionsCsv'])->name('reports.transactions.csv');
-        Route::get('/reports/investments.csv', [ReportController::class, 'investmentsCsv'])->name('reports.investments.csv');
-        Route::get('/reports/wallet-passbook.pdf', [ReportController::class, 'walletPassbookPdf'])->name('reports.wallet.passbook.pdf');
-        Route::get('/reports/exports/{reportExport}/download', [ReportController::class, 'downloadExport'])->name('reports.exports.download');
-        Route::post('/reports/exports/transactions', [ReportController::class, 'requestTransactionsExport'])->name('reports.exports.transactions');
-        Route::post('/reports/exports/investments', [ReportController::class, 'requestInvestmentsExport'])->name('reports.exports.investments');
-        Route::post('/reports/exports/wallet-passbook', [ReportController::class, 'requestWalletPassbookExport'])->name('reports.exports.wallet-passbook');
-
         Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
         Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
         Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
@@ -118,7 +115,11 @@ Route::middleware(['auth', 'active'])->group(function (): void {
 });
 
 Route::middleware(['auth', 'active', 'role:admin'])->prefix('admin')->name('admin.')->group(function (): void {
-    Route::get('/pending-approvals', [ApprovalController::class, 'index'])->name('approvals.index');
-    Route::post('/pending-approvals/{approval}/approve', [ApprovalController::class, 'approve'])->name('approvals.approve');
-    Route::post('/pending-approvals/{approval}/reject', [ApprovalController::class, 'reject'])->name('approvals.reject');
+    Route::get('/pending-approvals', [ApprovalController::class, 'index'])->middleware('option:approvals')->name('approvals.index');
+    Route::post('/pending-approvals/{approval}/approve', [ApprovalController::class, 'approve'])->middleware('option:approvals')->name('approvals.approve');
+    Route::post('/pending-approvals/{approval}/reject', [ApprovalController::class, 'reject'])->middleware('option:approvals')->name('approvals.reject');
+
+    Route::get('/access-control', [AccessControlController::class, 'index'])->middleware('option:access_control')->name('access-control.index');
+    Route::patch('/access-control/users/{user}', [AccessControlController::class, 'updateUserRole'])->middleware('option:access_control')->name('access-control.users.update');
+    Route::put('/access-control/roles/{role}/options', [AccessControlController::class, 'updateRoleOptions'])->middleware('option:access_control')->name('access-control.roles.options.update');
 });

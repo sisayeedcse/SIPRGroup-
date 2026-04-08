@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Enums\Role;
 
 class MemberUpdateRequest extends FormRequest
 {
@@ -15,7 +16,7 @@ class MemberUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'role' => ['required', Rule::in(['admin', 'finance', 'secretary', 'member'])],
+            'role' => ['required', Rule::in(array_map(fn (Role $role) => $role->value, Role::cases()))],
             'status' => ['required', Rule::in(['active', 'pending', 'removed'])],
             'locked' => ['required', 'boolean'],
             'title' => ['nullable', 'string', 'max:255'],

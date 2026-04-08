@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\EnsureUserHasRole;
+use App\Http\Middleware\EnsureUserCanAccessOption;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'active' => EnsureUserIsActive::class,
             'role' => EnsureUserHasRole::class,
+            'option' => EnsureUserCanAccessOption::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

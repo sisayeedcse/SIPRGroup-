@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Role;
 use App\Http\Requests\MemberUpdateRequest;
 use App\Models\User;
 use App\Services\ActivityLogService;
@@ -37,7 +38,7 @@ class MemberController extends Controller
 
         return view('app.members.index', [
             'members' => $query->paginate(20)->withQueryString(),
-            'roles' => ['admin', 'finance', 'secretary', 'member'],
+            'roles' => array_map(fn (Role $role) => $role->value, Role::cases()),
             'statuses' => ['active', 'pending', 'removed'],
         ]);
     }

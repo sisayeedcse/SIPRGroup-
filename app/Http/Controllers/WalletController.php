@@ -13,18 +13,34 @@ class WalletController extends Controller
     {
         $this->authorize('viewAny', Wallet::class);
 
-        $wallets = Wallet::query()
+        $currentUser = $request->user();
+        $role = $currentUser->role->value ?? $currentUser->role;
+        $canViewAllWallets = in_array($role, ['admin', 'finance', 'secretary', 'advisor'], true);
+
+        $walletsQuery = Wallet::query()
             ->with('user')
             ->withSum('histories as total_credit', 'amount')
-            ->orderByDesc('available')
+            ->orderByDesc('available');
+
+        if (! $canViewAllWallets) {
+            $walletsQuery->where('user_id', $currentUser->id);
+        }
+
+        $wallets = $walletsQuery
             ->paginate(20)
             ->withQueryString();
 
-        $selectedUserId = $request->integer('user_id');
+        $selectedUserId = $canViewAllWallets ? $request->integer('user_id') : $currentUser->id;
         $selectedUser = null;
 
         if ($selectedUserId > 0) {
-            $selectedUser = User::query()->find($selectedUserId);
+            $selectedUserQuery = User::query();
+
+            if (! $canViewAllWallets) {
+                $selectedUserQuery->where('id', $currentUser->id);
+            }
+
+            $selectedUser = $selectedUserQuery->find($selectedUserId);
         }
 
         $recentHistory = collect();
@@ -37,13 +53,20 @@ class WalletController extends Controller
                 ->get();
         }
 
-        $users = User::query()->orderBy('name')->get(['id', 'name', 'member_id']);
+        $usersQuery = User::query()->orderBy('name');
+
+        if (! $canViewAllWallets) {
+            $usersQuery->where('id', $currentUser->id);
+        }
+
+        $users = $usersQuery->get(['id', 'name', 'member_id']);
 
         return view('app.wallets.index', [
             'wallets' => $wallets,
             'users' => $users,
             'selectedUser' => $selectedUser,
             'recentHistory' => $recentHistory,
+            'canViewAllWallets' => $canViewAllWallets,
         ]);
     }
 }

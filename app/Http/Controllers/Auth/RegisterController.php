@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\PendingApproval;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
@@ -24,44 +24,42 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::min(6)],
-            'invite_code' => ['required', 'string', 'max:50'],
         ]);
 
-        $inviteCode = strtoupper(trim($data['invite_code']));
-
-        $member = User::query()->where('member_id', $inviteCode)->first();
-
-        if (! $member) {
-            return back()
-                ->withErrors(['invite_code' => 'Invalid invite code.'])
-                ->withInput($request->except('password', 'password_confirmation'));
-        }
-
-        if ($this->isAlreadyClaimed($member)) {
-            return back()
-                ->withErrors(['invite_code' => 'This invite code is already used.'])
-                ->withInput($request->except('password', 'password_confirmation'));
-        }
-
-        $member->forceFill([
+        User::query()->create([
+            'member_id' => $this->generateMemberId($data['name']),
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'status' => 'pending',
-        ])->save();
-
-        PendingApproval::query()->firstOrCreate(
-            ['user_id' => $member->id, 'status' => 'pending'],
-            ['user_id' => $member->id, 'status' => 'pending']
-        );
+            'role' => 'member',
+            'status' => 'active',
+            'locked' => false,
+        ]);
 
         return redirect()
             ->route('login')
-            ->with('status', 'Registration submitted. Wait for admin approval.');
+            ->with('status', 'Registration successful. You can now login.');
     }
 
-    private function isAlreadyClaimed(User $user): bool
+    private function generateMemberId(string $name): string
     {
-        return (bool) $user->google_id || ! str_ends_with(strtolower($user->email), '@sipr.com');
+        $prefix = Str::of($name)
+            ->upper()
+            ->replaceMatches('/[^A-Z ]/', '')
+            ->explode(' ')
+            ->filter()
+            ->take(2)
+            ->map(fn (string $part) => Str::substr($part, 0, 1))
+            ->implode('');
+
+        if ($prefix === '') {
+            $prefix = 'MB';
+        }
+
+        do {
+            $memberId = sprintf('SIPR%s-%s-%04d', now()->format('y'), Str::padRight($prefix, 2, 'X'), random_int(0, 9999));
+        } while (User::query()->where('member_id', $memberId)->exists());
+
+        return $memberId;
     }
 }

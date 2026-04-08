@@ -24,7 +24,8 @@
                     <p><strong>Phone:</strong> {{ $user->phone ?? '-' }}</p>
                     <p><strong>Title:</strong> {{ $user->title ?? '-' }}</p>
                     <p><strong>Address:</strong> {{ $user->address ?? '-' }}</p>
-                    <p><strong>Wallet:</strong> {{ $user->wallet ? number_format((float) $user->wallet->available, 2) : 'No wallet yet' }}</p>
+                    <p><strong>Wallet:</strong>
+                        {{ $user->wallet ? number_format((float) $user->wallet->available, 2) : 'No wallet yet' }}</p>
                 </div>
 
                 <div>
@@ -34,14 +35,38 @@
                         @method('PATCH')
                         <input type="text" name="name" value="{{ old('name', $user->name) }}" class="input" required>
                         <input type="email" name="email" value="{{ old('email', $user->email) }}" class="input" required>
-                        <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" class="input" placeholder="Phone">
-                        <input type="text" name="title" value="{{ old('title', $user->title) }}" class="input" placeholder="Title">
-                        <textarea name="address" class="textarea" placeholder="Address">{{ old('address', $user->address) }}</textarea>
+                        <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" class="input"
+                            placeholder="Phone">
+                        <input type="text" name="title" value="{{ old('title', $user->title) }}" class="input"
+                            placeholder="Title">
+                        <textarea name="address" class="textarea"
+                            placeholder="Address">{{ old('address', $user->address) }}</textarea>
                         <input type="file" name="photo" class="input" accept="image/*">
                         <button type="submit" class="primary-btn">Save Profile</button>
                     </form>
                 </div>
             </div>
+        </section>
+
+        <section class="panel" style="max-width:720px">
+            <h3 class="section-title">Change Password</h3>
+            <form method="POST" action="{{ route('profile.password.update') }}" class="stack">
+                @csrf
+                @method('PUT')
+                <div class="field">
+                    <label class="label">Current password</label>
+                    <input type="password" name="current_password" class="input" required>
+                </div>
+                <div class="field">
+                    <label class="label">New password</label>
+                    <input type="password" name="new_password" class="input" required>
+                </div>
+                <div class="field">
+                    <label class="label">Confirm new password</label>
+                    <input type="password" name="new_password_confirmation" class="input" required>
+                </div>
+                <button type="submit" class="primary-btn">Update Password</button>
+            </form>
         </section>
     </div>
 @endsection

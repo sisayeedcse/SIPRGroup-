@@ -2,22 +2,27 @@
 
 @section('title', 'Wallets | SIPR')
 @section('pageTitle', 'Wallet Overview')
-@section('pageSubtitle', 'Track available balances and review passbook history for each member.')
+@section('pageSubtitle', 'Track available balances and review passbook history.')
 
 @section('content')
     <div class="page-stack">
         <section class="panel">
             <div class="top-tools">
-                <div class="muted">Select a member to preview their passbook and balances.</div>
-                <form method="GET" action="{{ route('wallets.index') }}" class="btn-row">
-                    <select name="user_id" class="select">
-                        <option value="">Select member</option>
-                        @foreach ($users as $user)
-                            <option value="{{ $user->id }}" @selected((int) request('user_id') === $user->id)>{{ $user->name }} ({{ $user->member_id }})</option>
-                        @endforeach
-                    </select>
-                    <button type="submit" class="primary-btn">View</button>
-                </form>
+                @if ($canViewAllWallets)
+                    <div class="muted">Select a member to preview their passbook and balances.</div>
+                    <form method="GET" action="{{ route('wallets.index') }}" class="btn-row">
+                        <select name="user_id" class="select">
+                            <option value="">Select member</option>
+                            @foreach ($users as $user)
+                                <option value="{{ $user->id }}" @selected((int) request('user_id') === $user->id)>{{ $user->name }}
+                                    ({{ $user->member_id }})</option>
+                            @endforeach
+                        </select>
+                        <button type="submit" class="primary-btn">View</button>
+                    </form>
+                @else
+                    <div class="muted">You can view only your own wallet and passbook.</div>
+                @endif
             </div>
         </section>
 
@@ -30,8 +35,14 @@
                         <p>{{ $selectedUser->member_id }}</p>
                     </div>
                     <div class="grid grid-2" style="min-width:min(100%,320px)">
-                        <div class="kpi"><div class="label">Available</div><div class="value">{{ number_format((float) ($selectedUser->wallet->available ?? 0), 2) }}</div></div>
-                        <div class="kpi"><div class="label">Locked</div><div class="value">{{ number_format((float) ($selectedUser->wallet->locked ?? 0), 2) }}</div></div>
+                        <div class="kpi">
+                            <div class="label">Available</div>
+                            <div class="value">{{ number_format((float) ($selectedUser->wallet->available ?? 0), 2) }}</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">Locked</div>
+                            <div class="value">{{ number_format((float) ($selectedUser->wallet->locked ?? 0), 2) }}</div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -40,7 +51,15 @@
                 <h3 class="section-title">Recent History</h3>
                 <div class="table-wrap">
                     <table class="table">
-                        <thead><tr><th>Date</th><th>Type</th><th>Label</th><th>Amount</th><th>Note</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Label</th>
+                                <th>Amount</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             @forelse ($recentHistory as $entry)
                                 <tr>
@@ -51,7 +70,9 @@
                                     <td>{{ $entry->note }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="5" class="empty">No wallet history found.</td></tr>
+                                <tr>
+                                    <td colspan="5" class="empty">No wallet history found.</td>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -60,10 +81,16 @@
         @endif
 
         <section class="panel">
-            <h3 class="section-title">All Wallet Balances</h3>
+            <h3 class="section-title">{{ $canViewAllWallets ? 'All Wallet Balances' : 'Your Wallet Balance' }}</h3>
             <div class="table-wrap">
                 <table class="table">
-                    <thead><tr><th>Member</th><th>Available</th><th>Locked</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Available</th>
+                            <th>Locked</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         @forelse ($wallets as $wallet)
                             <tr>
@@ -72,7 +99,9 @@
                                 <td>{{ number_format((float) $wallet->locked, 2) }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="3" class="empty">No wallets found.</td></tr>
+                            <tr>
+                                <td colspan="3" class="empty">No wallets found.</td>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>

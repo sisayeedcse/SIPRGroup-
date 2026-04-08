@@ -22,11 +22,8 @@
         <button type="submit" class="btn">Login</button>
     </form>
 
-    <div class="divider">OR</div>
-
     <div class="stack">
-        <a class="ghost" href="{{ route('auth.google.redirect') }}">Continue with Google</a>
-        <a class="ghost" href="{{ route('register') }}">New member? Register with invite code</a>
+        <a class="ghost" href="{{ route('register') }}">New member? Create account</a>
         <a class="ghost" href="{{ route('password.request') }}">Forgot password?</a>
     </div>
 @endsection

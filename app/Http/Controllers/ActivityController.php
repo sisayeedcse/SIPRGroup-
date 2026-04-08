@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Role;
 use App\Models\Activity;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -58,7 +59,7 @@ class ActivityController extends Controller
                 'document-create',
                 'document-delete',
             ],
-            'roles' => ['admin', 'finance', 'secretary', 'member'],
+            'roles' => array_map(fn (Role $role) => $role->value, Role::cases()),
         ]);
     }
 }

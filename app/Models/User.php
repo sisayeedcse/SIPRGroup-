@@ -32,8 +32,6 @@ class User extends Authenticatable
         'locked',
         'gmail',
         'address',
-        'google_id',
-        'google_email',
         'status',
         'photo_path',
     ];
