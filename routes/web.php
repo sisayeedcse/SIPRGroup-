@@ -11,6 +11,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\InvestmentController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\MonthlyDueController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\NoticeboardController;
 use App\Http\Controllers\NotificationController;
@@ -62,6 +63,21 @@ Route::middleware(['auth', 'active'])->group(function (): void {
     Route::put('/notifications/read-all', [NotificationController::class, 'markAllRead'])->middleware('option:notifications')->name('notifications.read-all');
 
     Route::get('/reports', [ReportController::class, 'index'])->middleware('option:reports')->name('reports.index');
+    Route::get('/reports/monthly-dues', [MonthlyDueController::class, 'index'])
+        ->middleware(['option:reports', 'role:admin,finance'])
+        ->name('reports.monthly-dues.index');
+    Route::get('/reports/monthly-dues.csv', [MonthlyDueController::class, 'csv'])
+        ->middleware(['option:reports', 'role:admin,finance'])
+        ->name('reports.monthly-dues.csv');
+    Route::post('/reports/monthly-dues/prepare', [MonthlyDueController::class, 'prepare'])
+        ->middleware(['option:reports', 'role:admin,finance'])
+        ->name('reports.monthly-dues.prepare');
+    Route::post('/reports/monthly-dues/remind-unpaid', [MonthlyDueController::class, 'remindUnpaid'])
+        ->middleware(['option:reports', 'role:admin,finance'])
+        ->name('reports.monthly-dues.remind-unpaid');
+    Route::post('/reports/monthly-dues/close-month', [MonthlyDueController::class, 'closeMonth'])
+        ->middleware(['option:reports', 'role:admin'])
+        ->name('reports.monthly-dues.close-month');
     Route::get('/reports/transactions.csv', [ReportController::class, 'transactionsCsv'])->middleware('option:reports')->name('reports.transactions.csv');
     Route::get('/reports/investments.csv', [ReportController::class, 'investmentsCsv'])->middleware('option:reports')->name('reports.investments.csv');
     Route::get('/reports/wallet-passbook.pdf', [ReportController::class, 'walletPassbookPdf'])->middleware('option:reports')->name('reports.wallet.passbook.pdf');
@@ -76,6 +92,7 @@ Route::middleware(['auth', 'active'])->group(function (): void {
 
     Route::middleware('role:admin,finance,secretary')->group(function (): void {
         Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
+        Route::post('/transactions/{transaction}/adjust', [TransactionController::class, 'adjust'])->name('transactions.adjust');
         Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
         Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
 
@@ -105,6 +122,10 @@ Route::middleware(['auth', 'active'])->group(function (): void {
 
     Route::middleware('role:admin')->group(function (): void {
         Route::put('/members/{user}', [MemberController::class, 'update'])->name('members.update');
+        Route::post('/transactions/{transaction}/approve-adjustment', [TransactionController::class, 'approveAdjustment'])
+            ->name('transactions.adjustments.approve');
+        Route::post('/transactions/{transaction}/reject-adjustment', [TransactionController::class, 'rejectAdjustment'])
+            ->name('transactions.adjustments.reject');
     });
 
     Route::get('/modules/{module}', [ModuleController::class, 'show'])

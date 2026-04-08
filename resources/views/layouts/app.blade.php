@@ -905,6 +905,7 @@
 
             @php
                 $access = \App\Support\RoleAccess::class;
+                $userModel = \App\Models\User::class;
                 $role = auth()->user()->role->value ?? auth()->user()->role;
                 $canAccess = fn(string $option): bool => $access::allows($role, $option);
                 $unreadCount = auth()->user()->unreadNotifications()->count();
@@ -967,7 +968,7 @@
                     <div class="avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
                     <div class="user-meta">
                         <div class="user-name">{{ auth()->user()->name }}</div>
-                        <div class="user-role">{{ $role }}</div>
+                        <div class="user-role">{{ $userModel::roleDisplayLabel($role) }}</div>
                     </div>
                 </div>
                 <form method="POST" action="{{ route('logout') }}">
@@ -995,7 +996,8 @@
                                 <div style="font-size:13px;font-weight:800">{{ auth()->user()->name }}</div>
                                 <div
                                     style="font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.12em">
-                                    {{ $role }}</div>
+                                    {{ $role }}
+                                </div>
                             </div>
                         </button>
                         <div class="profile-drop">

@@ -100,4 +100,28 @@ class User extends Authenticatable
     {
         return $this->hasMany(PendingApproval::class);
     }
+
+    public function monthlyDues(): HasMany
+    {
+        return $this->hasMany(MonthlyDue::class);
+    }
+
+    public static function roleDisplayLabel(Role|string|null $role): string
+    {
+        $value = $role instanceof Role ? $role->value : (string) $role;
+
+        return match ($value) {
+            'finance' => 'Treasurer',
+            'admin' => 'Admin',
+            'secretary' => 'Secretary',
+            'advisor' => 'Advisor',
+            'member' => 'Member',
+            default => ucfirst($value),
+        };
+    }
+
+    public function getRoleDisplayAttribute(): string
+    {
+        return self::roleDisplayLabel($this->role);
+    }
 }

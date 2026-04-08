@@ -16,7 +16,7 @@
                 <select name="role" class="select">
                     <option value="">All roles</option>
                     @foreach ($roles as $role)
-                        <option value="{{ $role }}" @selected(request('role') === $role)>{{ ucfirst($role) }}</option>
+                        <option value="{{ $role }}" @selected(request('role') === $role)>{{ \App\Models\User::roleDisplayLabel($role) }}</option>
                     @endforeach
                 </select>
                 <select name="status" class="select">
@@ -44,7 +44,7 @@
                                 <td>{{ $member->member_id }}</td>
                                 <td>{{ $member->name }}</td>
                                 <td>{{ $member->email }}</td>
-                                <td><span class="pill pill-blue">{{ ucfirst($member->role->value ?? $member->role) }}</span></td>
+                                <td><span class="pill pill-blue">{{ \App\Models\User::roleDisplayLabel($member->role->value ?? $member->role) }}</span></td>
                                 <td><span class="pill {{ $member->status === 'active' ? 'pill-green' : 'pill-red' }}">{{ ucfirst($member->status) }}</span></td>
                                 <td>{{ $member->locked ? 'Yes' : 'No' }}</td>
                                 <td>{{ $member->title }}</td>
@@ -58,7 +58,7 @@
                                                 @method('PUT')
                                                 <select name="role" class="select" required>
                                                     @foreach ($roles as $role)
-                                                        <option value="{{ $role }}" @selected(($member->role->value ?? $member->role) === $role)>{{ ucfirst($role) }}</option>
+                                                        <option value="{{ $role }}" @selected(($member->role->value ?? $member->role) === $role)>{{ \App\Models\User::roleDisplayLabel($role) }}</option>
                                                     @endforeach
                                                 </select>
                                                 <select name="status" class="select" required>

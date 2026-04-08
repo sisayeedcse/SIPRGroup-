@@ -60,6 +60,69 @@ class ActivityLogService
         );
     }
 
+    public function transactionAdjusted(User $actor, Transaction $original, Transaction $adjustment): void
+    {
+        $this->write(
+            $actor,
+            'tx-adjust',
+            sprintf(
+                'Created adjustment transaction #%d for original #%d: %s %.2f for member #%d.',
+                $adjustment->id,
+                $original->id,
+                $adjustment->type,
+                (float) $adjustment->amount,
+                $adjustment->user_id
+            )
+        );
+    }
+
+    public function transactionAdjustmentRequested(User $actor, Transaction $original, Transaction $adjustment): void
+    {
+        $this->write(
+            $actor,
+            'tx-adjust-request',
+            sprintf(
+                'Requested approval for adjustment #%d on original #%d: %s %.2f for member #%d.',
+                $adjustment->id,
+                $original->id,
+                $adjustment->type,
+                (float) $adjustment->amount,
+                $adjustment->user_id
+            )
+        );
+    }
+
+    public function transactionAdjustmentApproved(User $actor, Transaction $adjustment): void
+    {
+        $this->write(
+            $actor,
+            'tx-adjust-approve',
+            sprintf(
+                'Approved adjustment #%d for original #%d (member #%d): %s %.2f.',
+                $adjustment->id,
+                (int) $adjustment->adjustment_for_id,
+                $adjustment->user_id,
+                $adjustment->type,
+                (float) $adjustment->amount
+            )
+        );
+    }
+
+    public function transactionAdjustmentRejected(User $actor, Transaction $adjustment, ?string $note = null): void
+    {
+        $this->write(
+            $actor,
+            'tx-adjust-reject',
+            sprintf(
+                'Rejected adjustment #%d for original #%d (member #%d). Note: %s',
+                $adjustment->id,
+                (int) $adjustment->adjustment_for_id,
+                $adjustment->user_id,
+                trim((string) $note) !== '' ? (string) $note : '-'
+            )
+        );
+    }
+
     public function memberUpdated(User $actor, User $before, User $after): void
     {
         $this->write(

@@ -2,10 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\MonthlyDueService;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request, MonthlyDueService $monthlyDueService): View
     {
-        return view('app.dashboard');
+        $dueSnapshot = $monthlyDueService->memberSnapshot($request->user()->id);
+
+        return view('app.dashboard', [
+            'dueSnapshot' => $dueSnapshot,
+        ]);
     }
 }

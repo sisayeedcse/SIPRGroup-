@@ -34,7 +34,15 @@
                         <h2>{{ $selectedUser->name }}</h2>
                         <p>{{ $selectedUser->member_id }}</p>
                     </div>
-                    <div class="grid grid-2" style="min-width:min(100%,320px)">
+                    <div class="grid grid-2" style="min-width:min(100%,420px)">
+                        <div class="kpi">
+                            <div class="label">Savings Total</div>
+                            <div class="value">{{ number_format((float) ($financialSummary['savings_total'] ?? 0), 2) }}</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">Invested Total</div>
+                            <div class="value">{{ number_format((float) ($financialSummary['invested_total'] ?? 0), 2) }}</div>
+                        </div>
                         <div class="kpi">
                             <div class="label">Available</div>
                             <div class="value">{{ number_format((float) ($selectedUser->wallet->available ?? 0), 2) }}</div>

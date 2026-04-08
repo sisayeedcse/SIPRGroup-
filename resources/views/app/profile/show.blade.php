@@ -11,7 +11,8 @@
                 <div>
                     <div class="hero-kicker">Member Profile</div>
                     <h2>{{ $user->name }}</h2>
-                    <p>{{ $user->member_id }} · {{ $user->role->value ?? $user->role }} · {{ ucfirst($user->status) }}</p>
+                    <p>{{ $user->member_id }} · {{ \App\Models\User::roleDisplayLabel($user->role->value ?? $user->role) }}
+                        · {{ ucfirst($user->status) }}</p>
                 </div>
             </div>
         </section>

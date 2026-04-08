@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Wallet;
+use App\Services\MemberFinancialSummaryService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class WalletController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, MemberFinancialSummaryService $summaryService): View
     {
         $this->authorize('viewAny', Wallet::class);
 
@@ -44,6 +45,10 @@ class WalletController extends Controller
         }
 
         $recentHistory = collect();
+        $financialSummary = [
+            'savings_total' => 0.0,
+            'invested_total' => 0.0,
+        ];
 
         if ($selectedUser?->wallet) {
             $recentHistory = $selectedUser->wallet->histories()
@@ -51,6 +56,10 @@ class WalletController extends Controller
                 ->orderByDesc('id')
                 ->limit(30)
                 ->get();
+        }
+
+        if ($selectedUser) {
+            $financialSummary = $summaryService->forUser($selectedUser->id);
         }
 
         $usersQuery = User::query()->orderBy('name');
@@ -66,6 +75,7 @@ class WalletController extends Controller
             'users' => $users,
             'selectedUser' => $selectedUser,
             'recentHistory' => $recentHistory,
+            'financialSummary' => $financialSummary,
             'canViewAllWallets' => $canViewAllWallets,
         ]);
     }

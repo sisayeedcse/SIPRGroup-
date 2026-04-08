@@ -11,7 +11,8 @@
                 <div>
                     <div class="hero-kicker">Transaction #{{ $transaction->id }}</div>
                     <h2>{{ ucfirst($transaction->type) }} · {{ number_format((float) $transaction->amount, 2) }}</h2>
-                    <p>{{ $transaction->user?->name }} ({{ $transaction->user?->member_id }}) · {{ $transaction->date?->format('Y-m-d') }}</p>
+                    <p>{{ $transaction->user?->name }} ({{ $transaction->user?->member_id }}) ·
+                        {{ $transaction->date?->format('Y-m-d') }}</p>
                 </div>
                 <a class="soft-btn" href="{{ route('transactions.index') }}">Back to transactions</a>
             </div>
@@ -31,7 +32,9 @@
                     <h3 class="section-title">Member Context</h3>
                     <p><strong>Name:</strong> {{ $transaction->user?->name }}</p>
                     <p><strong>Member ID:</strong> {{ $transaction->user?->member_id }}</p>
-                    <p><strong>Role:</strong> {{ $transaction->user?->role->value ?? $transaction->user?->role }}</p>
+                    <p><strong>Role:</strong>
+                        {{ \App\Models\User::roleDisplayLabel($transaction->user?->role->value ?? $transaction->user?->role) }}
+                    </p>
                     <p><strong>Status:</strong> {{ ucfirst($transaction->user?->status ?? '-') }}</p>
                 </div>
             </div>

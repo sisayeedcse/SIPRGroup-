@@ -26,7 +26,8 @@
                             <div>
                                 <strong>{{ $role->label() }}</strong>
                                 <div class="muted" style="font-size:12px;margin-top:2px">Configure menu and route access for
-                                    {{ strtolower($role->label()) }} users.</div>
+                                    {{ strtolower($role->label()) }} users.
+                                </div>
                             </div>
                             <button type="submit" class="primary-btn">Save {{ $role->label() }} Access</button>
                         </div>
@@ -47,7 +48,8 @@
 
         <section class="panel">
             <h3 class="section-title">Member Role Assignment</h3>
-            <p class="muted" style="margin-top:-4px">Assign whether a user is admin, secretary, advisor, finance, or member.
+            <p class="muted" style="margin-top:-4px">Assign whether a user is admin, secretary, advisor, treasurer, or
+                member.
             </p>
 
             <div class="table-wrap" style="margin-top:12px">
@@ -67,7 +69,8 @@
                                 <td>{{ $member->name }}</td>
                                 <td>{{ $member->member_id }}</td>
                                 <td>{{ $member->email }}</td>
-                                <td><span class="pill pill-blue">{{ ucfirst($member->role->value ?? $member->role) }}</span>
+                                <td><span
+                                        class="pill pill-blue">{{ \App\Models\User::roleDisplayLabel($member->role->value ?? $member->role) }}</span>
                                 </td>
                                 <td>
                                     <form method="POST" action="{{ route('admin.access-control.users.update', $member) }}"
