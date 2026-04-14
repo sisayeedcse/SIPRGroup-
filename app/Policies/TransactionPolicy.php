@@ -9,7 +9,17 @@ class TransactionPolicy
 {
     public function view(User $user, Transaction $transaction): bool
     {
-        return $user->status === 'active';
+        if ($user->status !== 'active') {
+            return false;
+        }
+
+        $role = $user->role->value ?? $user->role;
+
+        if (in_array($role, ['admin', 'finance', 'secretary', 'advisor'], true)) {
+            return true;
+        }
+
+        return $transaction->user_id === $user->id;
     }
 
     public function viewAny(User $user): bool
@@ -26,11 +36,9 @@ class TransactionPolicy
 
     public function update(User $user, Transaction $transaction): bool
     {
-        return $this->create($user);
-    }
+        $role = $user->role->value ?? $user->role;
 
-    public function delete(User $user, Transaction $transaction): bool
-    {
-        return $this->create($user);
+        // Only admins can approve/reject adjustments
+        return $role === 'admin';
     }
 }

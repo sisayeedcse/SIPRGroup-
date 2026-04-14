@@ -93,8 +93,6 @@ Route::middleware(['auth', 'active'])->group(function (): void {
     Route::middleware('role:admin,finance,secretary')->group(function (): void {
         Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
         Route::post('/transactions/{transaction}/adjust', [TransactionController::class, 'adjust'])->name('transactions.adjust');
-        Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
-        Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
 
         Route::post('/investments', [InvestmentController::class, 'store'])->name('investments.store');
         Route::put('/investments/{investment}', [InvestmentController::class, 'update'])->name('investments.update');

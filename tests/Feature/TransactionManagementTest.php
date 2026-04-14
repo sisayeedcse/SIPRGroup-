@@ -93,7 +93,7 @@ class TransactionManagementTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_update_transaction_and_wallet_is_recalculated(): void
+    public function test_transactions_are_immutable_and_cannot_be_updated(): void
     {
         $admin = User::factory()->create([
             'role' => 'admin',
@@ -119,35 +119,32 @@ class TransactionManagementTest extends TestCase
             'note' => 'Initial',
         ]);
 
+        // PUT method not allowed for transactions - transactions are immutable
         $this->actingAs($admin)
-            ->put(route('transactions.update', $transaction), [
+            ->put('/transactions/' . $transaction->id, [
                 'user_id' => $target->id,
                 'type' => 'expense',
                 'amount' => 25,
                 'date' => now()->toDateString(),
                 'note' => 'Stationery',
             ])
-            ->assertRedirect();
+            ->assertStatus(405);
 
+        // Verify original transaction is unchanged
         $this->assertDatabaseHas('transactions', [
             'id' => $transaction->id,
-            'type' => 'expense',
-            'amount' => 25.00,
+            'type' => 'deposit',
+            'amount' => 100.00,
         ]);
 
+        // Verify wallet is unchanged
         $this->assertDatabaseHas('wallets', [
             'user_id' => $target->id,
-            'available' => -25.00,
-        ]);
-
-        $this->assertDatabaseHas('activities', [
-            'action' => 'tx-update',
-            'user_id' => $admin->id,
-            'role' => 'admin',
+            'available' => 100.00,
         ]);
     }
 
-    public function test_admin_can_delete_transaction_and_wallet_is_reverted(): void
+    public function test_transactions_are_immutable_and_cannot_be_deleted(): void
     {
         $admin = User::factory()->create([
             'role' => 'admin',
@@ -173,23 +170,22 @@ class TransactionManagementTest extends TestCase
             'note' => 'One time',
         ]);
 
+        // DELETE method not allowed for transactions - transactions are immutable
         $this->actingAs($admin)
-            ->delete(route('transactions.destroy', $transaction))
-            ->assertRedirect();
+            ->delete('/transactions/' . $transaction->id)
+            ->assertStatus(405);
 
-        $this->assertDatabaseMissing('transactions', [
+        // Verify original transaction still exists
+        $this->assertDatabaseHas('transactions', [
             'id' => $transaction->id,
+            'type' => 'deposit',
+            'amount' => 200.00,
         ]);
 
+        // Verify wallet is unchanged
         $this->assertDatabaseHas('wallets', [
             'user_id' => $target->id,
-            'available' => 100.00,
-        ]);
-
-        $this->assertDatabaseHas('activities', [
-            'action' => 'tx-delete',
-            'user_id' => $admin->id,
-            'role' => 'admin',
+            'available' => 300.00,
         ]);
     }
 
@@ -512,20 +508,8 @@ class TransactionManagementTest extends TestCase
 
         app(PeriodLockService::class)->closeMonth(now()->format('Y-m'), $admin->id, 'Locked');
 
-        $this->actingAs($finance)
-            ->put(route('transactions.update', $transaction), [
-                'user_id' => $member->id,
-                'type' => 'deposit',
-                'amount' => 450,
-                'date' => now()->toDateString(),
-                'note' => 'Try update',
-            ])
-            ->assertSessionHasErrors('date');
-
-        $this->actingAs($finance)
-            ->delete(route('transactions.destroy', $transaction))
-            ->assertSessionHasErrors('date');
-
+        // Transactions are immutable - no update route exists
+        // Finance cannot adjust in closed month
         $this->actingAs($finance)
             ->post(route('transactions.adjust', $transaction), [
                 'type' => 'expense',
@@ -534,5 +518,74 @@ class TransactionManagementTest extends TestCase
                 'note' => 'Try adjust',
             ])
             ->assertSessionHasErrors('date');
+    }
+
+    public function test_member_sees_only_own_investment_transactions(): void
+    {
+        $member = User::factory()->create([
+            'role' => 'member',
+            'status' => 'active',
+        ]);
+
+        $other = User::factory()->create([
+            'role' => 'member',
+            'status' => 'active',
+        ]);
+
+        Transaction::query()->create([
+            'user_id' => $member->id,
+            'type' => 'investment',
+            'amount' => 200,
+            'date' => now()->toDateString(),
+            'note' => 'My investment',
+        ]);
+
+        Transaction::query()->create([
+            'user_id' => $member->id,
+            'type' => 'deposit',
+            'amount' => 150,
+            'date' => now()->toDateString(),
+            'note' => 'My savings deposit',
+        ]);
+
+        Transaction::query()->create([
+            'user_id' => $other->id,
+            'type' => 'investment',
+            'amount' => 300,
+            'date' => now()->toDateString(),
+            'note' => 'Other member investment',
+        ]);
+
+        $this->actingAs($member)
+            ->get(route('transactions.index'))
+            ->assertOk()
+            ->assertSee('My investment')
+            ->assertDontSee('My savings deposit')
+            ->assertDontSee('Other member investment');
+    }
+
+    public function test_member_cannot_open_other_member_transaction_detail(): void
+    {
+        $member = User::factory()->create([
+            'role' => 'member',
+            'status' => 'active',
+        ]);
+
+        $other = User::factory()->create([
+            'role' => 'member',
+            'status' => 'active',
+        ]);
+
+        $otherTx = Transaction::query()->create([
+            'user_id' => $other->id,
+            'type' => 'investment',
+            'amount' => 200,
+            'date' => now()->toDateString(),
+            'note' => 'Other record',
+        ]);
+
+        $this->actingAs($member)
+            ->get(route('transactions.show', $otherTx))
+            ->assertForbidden();
     }
 }

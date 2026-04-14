@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\PendingApproval;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
@@ -26,19 +28,26 @@ class RegisterController extends Controller
             'password' => ['required', 'confirmed', Password::min(6)],
         ]);
 
-        User::query()->create([
-            'member_id' => $this->generateMemberId($data['name']),
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role' => 'member',
-            'status' => 'active',
-            'locked' => false,
-        ]);
+        DB::transaction(function () use ($data): void {
+            $user = User::query()->create([
+                'member_id' => $this->generateMemberId($data['name']),
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'role' => 'member',
+                'status' => 'pending',
+                'locked' => false,
+            ]);
+
+            PendingApproval::query()->create([
+                'user_id' => $user->id,
+                'status' => 'pending',
+            ]);
+        });
 
         return redirect()
             ->route('login')
-            ->with('status', 'Registration successful. You can now login.');
+            ->with('status', 'Registration submitted. Your account will be activated after admin approval.');
     }
 
     private function generateMemberId(string $name): string

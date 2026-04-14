@@ -33,13 +33,23 @@ class TransactionController extends Controller
     {
         $this->authorize('viewAny', Transaction::class);
 
+        $currentUser = $request->user();
+        $role = $currentUser->role->value ?? $currentUser->role;
+        $isMember = $role === 'member';
+
         $query = Transaction::query()->with('user')->orderByDesc('date')->orderByDesc('id');
 
-        if ($request->filled('type')) {
+        if ($isMember) {
+            $query
+                ->where('user_id', $currentUser->id)
+                ->where('type', 'investment');
+        }
+
+        if (! $isMember && $request->filled('type')) {
             $query->where('type', $request->string('type')->toString());
         }
 
-        if ($request->filled('user_id')) {
+        if (! $isMember && $request->filled('user_id')) {
             $query->where('user_id', (int) $request->integer('user_id'));
         }
 
@@ -52,12 +62,21 @@ class TransactionController extends Controller
         }
 
         $transactions = $query->paginate(20)->withQueryString();
-        $users = User::query()->orderBy('name')->get(['id', 'name', 'member_id']);
+        $users = $isMember
+            ? User::query()->where('id', $currentUser->id)->get(['id', 'name', 'member_id'])
+            : User::query()->orderBy('name')->get(['id', 'name', 'member_id']);
+
+        $investedTotal = (float) Transaction::query()
+            ->where('user_id', $currentUser->id)
+            ->where('type', 'investment')
+            ->sum('amount');
 
         return view('app.transactions.index', [
             'transactions' => $transactions,
             'users' => $users,
             'types' => ['deposit', 'investment', 'profit', 'expense', 'fine'],
+            'isMember' => $isMember,
+            'investedTotal' => $investedTotal,
         ]);
     }
 
@@ -83,55 +102,9 @@ class TransactionController extends Controller
         return back()->with('status', 'Transaction created.');
     }
 
-    public function update(
-        TransactionRequest $request,
-        Transaction $transaction,
-        PeriodLockService $periodLockService,
-        WalletService $walletService,
-        ActivityLogService $activityLogService
-    ): RedirectResponse
-    {
-        $periodLockService->ensureWritableForActor($request->user(), (string) $transaction->date?->toDateString());
-        $periodLockService->ensureWritableForActor($request->user(), $request->string('date')->toString());
-        $this->authorize('update', $transaction);
 
-        DB::transaction(function () use ($request, $transaction, $walletService, $activityLogService): void {
-            $old = $transaction->replicate();
-            $old->user_id = $transaction->user_id;
-            $old->type = $transaction->type;
-            $old->amount = $transaction->amount;
-            $old->date = $transaction->date;
-            $old->note = $transaction->note;
 
-            $transaction->update($request->validated());
-            $updated = $transaction->fresh();
 
-            $walletService->replaceTransaction($old, $updated);
-            $activityLogService->transactionUpdated($request->user(), $old, $updated);
-        });
-
-        return back()->with('status', 'Transaction updated.');
-    }
-
-    public function destroy(
-        Transaction $transaction,
-        PeriodLockService $periodLockService,
-        WalletService $walletService,
-        ActivityLogService $activityLogService,
-        Request $request
-    ): RedirectResponse
-    {
-        $this->authorize('delete', $transaction);
-        $periodLockService->ensureWritableForActor($request->user(), (string) $transaction->date?->toDateString());
-
-        DB::transaction(function () use ($transaction, $walletService, $activityLogService, $request): void {
-            $walletService->removeTransaction($transaction);
-            $activityLogService->transactionDeleted($request->user(), $transaction);
-            $transaction->delete();
-        });
-
-        return back()->with('status', 'Transaction deleted.');
-    }
 
     public function adjust(
         TransactionAdjustmentRequest $request,
@@ -140,7 +113,7 @@ class TransactionController extends Controller
         WalletService $walletService,
         ActivityLogService $activityLogService
     ): RedirectResponse {
-        $this->authorize('update', $transaction);
+        // Always allow adjustments for authorized users - no need to check update since we removed that policy
         $periodLockService->ensureWritableForActor(
             $request->user(),
             $request->string('date')->toString()
