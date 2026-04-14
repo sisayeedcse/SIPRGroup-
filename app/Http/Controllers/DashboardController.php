@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Models\User;
 use App\Services\MemberFinancialSummaryService;
 use App\Services\MonthlyDueService;
 use Illuminate\Http\Request;
@@ -25,25 +26,35 @@ class DashboardController extends Controller
         $monthEnd = now()->endOfMonth()->toDateString();
 
         $monthlyMemberContributions = [];
+        $adminMembers = collect();
 
         if (($user->role->value ?? $user->role) === 'admin') {
-            $buildTypeRows = function (string $type) use ($monthStart, $monthEnd): array {
-                $rows = Transaction::query()
-                    ->with('user:id,name,member_id')
+            $adminMembers = User::query()
+                ->where('status', 'active')
+                ->orderBy('name')
+                ->get(['id', 'name', 'member_id']);
+
+            $buildTypeRows = function (string $type) use ($monthStart, $monthEnd, $adminMembers): array {
+                $amountByUserId = Transaction::query()
                     ->selectRaw('user_id, SUM(amount) as total_amount')
                     ->whereBetween('date', [$monthStart, $monthEnd])
                     ->where('type', $type)
                     ->where('is_adjustment', false)
                     ->groupBy('user_id')
-                    ->orderByDesc('total_amount')
-                    ->get()
-                    ->map(function (Transaction $row): array {
+                    ->pluck('total_amount', 'user_id');
+
+                $rows = $adminMembers
+                    ->map(function (User $member) use ($type, $amountByUserId): array {
+                        $amount = (float) ($amountByUserId[$member->id] ?? 0);
+
                         return [
-                            'member_name' => $row->user?->name ?? 'Unknown Member',
-                            'member_id' => $row->user?->member_id ?? '-',
-                            'amount' => (float) ($row->total_amount ?? 0),
+                            'member_name' => $member->name,
+                            'member_id' => $member->member_id,
+                            'amount' => $amount,
+                            'pending' => $type === 'deposit' && $amount <= 0,
                         ];
                     })
+                    ->sortByDesc('amount')
                     ->values();
 
                 return [
@@ -63,6 +74,7 @@ class DashboardController extends Controller
             'financialSummary' => $financialSummary,
             'currentMonth' => now()->format('Y-m'),
             'monthlyMemberContributions' => $monthlyMemberContributions,
+            'adminMembers' => $adminMembers,
         ]);
     }
 }

@@ -2,7 +2,7 @@
 
 @section('title', 'Profile | SIPR')
 @section('pageTitle', 'My Profile')
-@section('pageSubtitle', 'Update your contact details and profile image.')
+@section('pageSubtitle', 'Update your contact details and account information.')
 
 @section('content')
     <div class="page-stack">
@@ -31,7 +31,7 @@
 
                 <div>
                     <h3 class="section-title">Update Profile</h3>
-                    <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="stack">
+                    <form method="POST" action="{{ route('profile.update') }}" class="stack">
                         @csrf
                         @method('PATCH')
                         <input type="text" name="name" value="{{ old('name', $user->name) }}" class="input" required>
@@ -42,7 +42,6 @@
                             placeholder="Title">
                         <textarea name="address" class="textarea"
                             placeholder="Address">{{ old('address', $user->address) }}</textarea>
-                        <input type="file" name="photo" class="input" accept="image/*">
                         <button type="submit" class="primary-btn">Save Profile</button>
                     </form>
                 </div>

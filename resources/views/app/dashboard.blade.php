@@ -17,6 +17,7 @@
             $paid = (float) ($dueSnapshot['current_paid'] ?? 0);
             $outstanding = max(0, $expected - $paid);
             $monthContribs = $monthlyMemberContributions ?? [];
+            $membersForDeposit = $adminMembers ?? collect();
         @endphp
 
         <style>
@@ -282,10 +283,32 @@
                 color: #cbf0dd;
             }
 
+            .list-row .amount.pending {
+                color: #ff8e9d;
+                text-transform: uppercase;
+                letter-spacing: .04em;
+            }
+
             .admin-note {
                 margin: 8px 0 0;
                 font-size: 12px;
                 color: var(--muted);
+            }
+
+            .inline-deposit {
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                background: rgba(22, 31, 54, 0.7);
+                padding: 12px;
+                margin-top: 12px;
+            }
+
+            .inline-deposit h4 {
+                margin: 0 0 8px;
+                font-size: 13px;
+                letter-spacing: .04em;
+                text-transform: uppercase;
+                color: #cae3ff;
             }
 
             @media (max-width: 1080px) {
@@ -370,11 +393,32 @@
                 <h3 class="section-title">This Month Member Contributions</h3>
                 <p class="admin-note">Expand each section to view member-wise totals for {{ $currentMonth }}.</p>
 
+                <div class="inline-deposit">
+                    <h4>Quick Add Deposit</h4>
+                    <form method="POST" action="{{ route('transactions.store') }}" class="grid grid-4">
+                        @csrf
+                        <input type="hidden" name="type" value="deposit">
+
+                        <select name="user_id" class="select" required>
+                            <option value="">Select member</option>
+                            @foreach ($membersForDeposit as $member)
+                                <option value="{{ $member->id }}">{{ $member->name }} ({{ $member->member_id }})</option>
+                            @endforeach
+                        </select>
+
+                        <input type="number" name="amount" min="0.01" step="0.01" class="input" placeholder="Deposit amount"
+                            required>
+                        <input type="date" name="date" value="{{ now()->toDateString() }}" class="input" required>
+                        <button type="submit" class="primary-btn">Add Deposit</button>
+
+                        <input type="text" name="note" class="input" placeholder="Note (optional)" style="grid-column:1 / -1">
+                    </form>
+                </div>
+
                 <div class="accordion-stack">
                     @php
                         $sections = [
                             'deposit' => 'Deposits',
-                            'investment' => 'Investments',
                         ];
                     @endphp
 
@@ -405,7 +449,13 @@
                                         <div class="list-row">
                                             <span>{{ $row['member_name'] }}</span>
                                             <span>{{ $row['member_id'] }}</span>
-                                            <span class="amount">{{ number_format((float) $row['amount'], 2) }}</span>
+                                            <span class="amount @if (($row['pending'] ?? false)) pending @endif">
+                                                @if (($row['pending'] ?? false))
+                                                    Pending
+                                                @else
+                                                    {{ number_format((float) $row['amount'], 2) }}
+                                                @endif
+                                            </span>
                                         </div>
                                     @endforeach
                                 @else
@@ -414,6 +464,12 @@
                             </div>
                         </details>
                     @endforeach
+                </div>
+
+                <div style="margin-top: 14px; display: flex; gap: 8px;">
+                    <a href="{{ route('monthly-payments.index') }}" class="primary-btn"
+                        style="display: inline-block; padding: 10px 14px; font-size: 12px; font-weight: 800;">Show Monthly
+                        Report</a>
                 </div>
             </section>
         @endif

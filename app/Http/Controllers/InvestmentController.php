@@ -35,8 +35,13 @@ class InvestmentController extends Controller
 
         $query = Investment::query()->orderByDesc('date')->orderByDesc('id');
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->string('status')->toString());
+        $status = $request->string('status')->toString();
+        if ($status === '') {
+            $status = 'active';
+        }
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
         }
 
         if ($request->filled('q')) {
@@ -49,7 +54,14 @@ class InvestmentController extends Controller
             });
         }
 
+        $summaryQuery = clone $query;
+
         $investments = $query->paginate(12)->withQueryString();
+        $summary = [
+            'deployed' => (float) $summaryQuery->sum('capital_deployed'),
+            'returned' => (float) $summaryQuery->sum('actual_return'),
+            'active' => (clone $summaryQuery)->where('status', 'active')->count(),
+        ];
         $selected = null;
 
         if ($request->filled('investment')) {
@@ -64,6 +76,8 @@ class InvestmentController extends Controller
         return view('app.investments.index', [
             'investments' => $investments,
             'selected' => $selected,
+            'summary' => $summary,
+            'selectedStatus' => $status,
             'statuses' => ['active', 'completed', 'paused'],
         ]);
     }

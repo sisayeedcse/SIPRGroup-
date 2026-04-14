@@ -13,6 +13,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap');
 
         :root {
+            --sidebar-w: 258px;
             --bg-0: #070c16;
             --bg-1: #0d1424;
             --surface: rgba(16, 23, 40, 0.8);
@@ -48,10 +49,19 @@
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
+            line-height: 1.45;
             background:
                 radial-gradient(1200px 600px at 100% -10%, rgba(76, 169, 255, 0.22), transparent 60%),
                 radial-gradient(900px 500px at 0% 0%, rgba(62, 207, 142, 0.16), transparent 58%),
                 linear-gradient(160deg, var(--bg-0), var(--bg-1));
+        }
+
+        img,
+        svg,
+        video,
+        iframe {
+            max-width: 100%;
+            height: auto;
         }
 
         a {
@@ -71,7 +81,7 @@
         }
 
         .sidebar {
-            width: 258px;
+            width: var(--sidebar-w);
             background: linear-gradient(180deg, rgba(10, 15, 30, 0.94), rgba(12, 18, 34, 0.92));
             backdrop-filter: blur(14px);
             border-right: 1px solid var(--line);
@@ -247,7 +257,7 @@
         }
 
         .main {
-            margin-left: 258px;
+            margin-left: var(--sidebar-w);
             flex: 1;
             padding: 24px 26px 34px;
             min-width: 0;
@@ -278,7 +288,7 @@
 
         .page-title {
             font-family: 'Sora', 'Manrope', sans-serif;
-            font-size: 31px;
+            font-size: clamp(22px, 4vw, 31px);
             line-height: 1.15;
             font-weight: 700;
             margin: 0;
@@ -434,7 +444,7 @@
         .hero h2 {
             margin: 8px 0 10px;
             font-family: 'Sora', 'Manrope', sans-serif;
-            font-size: 31px;
+            font-size: clamp(22px, 4vw, 31px);
             line-height: 1.1;
         }
 
@@ -446,6 +456,7 @@
         .grid {
             display: grid;
             gap: 14px;
+            min-width: 0;
         }
 
         .grid-2 {
@@ -488,9 +499,10 @@
 
         .kpi .value {
             font-family: 'Sora', 'Manrope', sans-serif;
-            font-size: 28px;
+            font-size: clamp(20px, 3vw, 28px);
             font-weight: 700;
             margin-top: 7px;
+            word-break: break-word;
         }
 
         .kpi .note {
@@ -513,6 +525,7 @@
             border-radius: 18px;
             padding: 16px;
             box-shadow: var(--shadow-soft);
+            min-width: 0;
         }
 
         .panel+.panel {
@@ -603,6 +616,7 @@
         .select,
         .textarea {
             width: 100%;
+            max-width: 100%;
             background: rgba(20, 30, 53, 0.74);
             border: 1px solid var(--line);
             border-radius: 11px;
@@ -628,6 +642,7 @@
 
         .table-wrap {
             overflow: auto;
+            max-width: 100%;
             border-radius: 14px;
             border: 1px solid var(--line);
             background: rgba(15, 22, 38, 0.55);
@@ -733,6 +748,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            min-width: 0;
         }
 
         details summary {
@@ -776,6 +792,7 @@
 
         @media (max-width: 900px) {
             .sidebar {
+                width: min(86vw, 320px);
                 transform: translateX(-104%);
                 transition: transform .24s ease;
                 box-shadow: var(--shadow-strong);
@@ -860,6 +877,27 @@
             .table th,
             .table td {
                 padding: 10px 12px;
+                white-space: normal;
+                word-break: break-word;
+            }
+
+            .input,
+            .select,
+            .textarea,
+            button,
+            .primary-btn,
+            .ghost-btn,
+            .soft-btn,
+            .danger-btn {
+                font-size: 16px;
+            }
+
+            .grid button,
+            .grid .primary-btn,
+            .grid .ghost-btn,
+            .grid .soft-btn,
+            .grid .danger-btn {
+                width: 100%;
             }
         }
 
@@ -889,6 +927,14 @@
                 width: 100%;
                 justify-content: flex-start;
             }
+
+            .section-title {
+                font-size: 16px;
+            }
+
+            .table {
+                min-width: 520px;
+            }
         }
     </style>
 </head>
@@ -915,6 +961,10 @@
                 @if ($canAccess('dashboard'))
                     <a class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}"
                         href="{{ route('dashboard') }}"><span class="nav-emoji">⬡</span>Dashboard</a>
+                @endif
+                @if ($canAccess('reports'))
+                    <a class="nav-item {{ request()->routeIs('monthly-payments.*') ? 'active' : '' }}"
+                        href="{{ route('monthly-payments.index') }}"><span class="nav-emoji">📋</span>Monthly Payments</a>
                 @endif
                 @if ($canAccess('transactions'))
                     <a class="nav-item {{ request()->routeIs('transactions.*') ? 'active' : '' }}"

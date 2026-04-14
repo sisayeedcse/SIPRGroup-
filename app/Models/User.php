@@ -33,7 +33,6 @@ class User extends Authenticatable
         'gmail',
         'address',
         'status',
-        'photo_path',
     ];
 
     /**

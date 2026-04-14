@@ -12,6 +12,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\InvestmentController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MonthlyDueController;
+use App\Http\Controllers\MonthlyPaymentController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\NoticeboardController;
 use App\Http\Controllers\NotificationController;
@@ -66,6 +67,9 @@ Route::middleware(['auth', 'active'])->group(function (): void {
     Route::get('/reports/monthly-dues', [MonthlyDueController::class, 'index'])
         ->middleware(['option:reports', 'role:admin,finance'])
         ->name('reports.monthly-dues.index');
+    Route::get('/reports/monthly-payments', [MonthlyPaymentController::class, 'index'])
+        ->middleware(['option:reports', 'role:admin,finance'])
+        ->name('monthly-payments.index');
     Route::get('/reports/monthly-dues.csv', [MonthlyDueController::class, 'csv'])
         ->middleware(['option:reports', 'role:admin,finance'])
         ->name('reports.monthly-dues.csv');
@@ -91,6 +95,9 @@ Route::middleware(['auth', 'active'])->group(function (): void {
     Route::put('/proposals/{proposal}', [NoticeboardController::class, 'updateProposal'])->name('proposals.update');
 
     Route::middleware('role:admin,finance,secretary')->group(function (): void {
+        Route::post('/monthly-payments/add-deposit', [MonthlyPaymentController::class, 'addDeposit'])->name('monthly-payments.add-deposit');
+            Route::delete('/monthly-payments/remove-deposit/{transaction}', [MonthlyPaymentController::class, 'removeDeposit'])->name('monthly-payments.remove-deposit');
+
         Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
         Route::post('/transactions/{transaction}/adjust', [TransactionController::class, 'adjust'])->name('transactions.adjust');
 
