@@ -1042,7 +1042,7 @@
                     <div class="profile" id="profileMenu">
                         <button type="button" class="profile-btn" id="profileToggleBtn" aria-expanded="false">
                             <div class="avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
-                            <div style="text-align:left">
+                            <div class="profile-text" style="text-align:left">
                                 <div style="font-size:13px;font-weight:800">{{ auth()->user()->name }}</div>
                                 <div
                                     style="font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.12em">

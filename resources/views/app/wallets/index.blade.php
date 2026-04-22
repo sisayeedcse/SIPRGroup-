@@ -10,7 +10,8 @@
             <div class="top-tools">
                 @if ($canViewAllWallets)
                     <div class="muted">Select a member to preview their passbook and balances.</div>
-                    <form method="GET" action="{{ route('wallets.index') }}" class="btn-row">
+                    <form method="GET" action="{{ route('wallets.index') }}"
+                        style="display: grid; grid-template-columns: 1fr auto; gap: clamp(8px, 2vw, 10px); width: 100%; align-items: center;">
                         <select name="user_id" class="select">
                             <option value="">Select member</option>
                             @foreach ($users as $user)
@@ -18,7 +19,7 @@
                                     ({{ $user->member_id }})</option>
                             @endforeach
                         </select>
-                        <button type="submit" class="primary-btn">View</button>
+                        <button type="submit" class="primary-btn" style="width: auto; min-width: 44px;">View</button>
                     </form>
                 @else
                     <div class="muted">You can view only your own wallet and passbook.</div>
@@ -29,12 +30,12 @@
         @if ($selectedUser)
             <section class="hero">
                 <div class="hero-top">
-                    <div>
+                    <div style="flex: 1; min-width: 0;">
                         <div class="hero-kicker">Member Passbook</div>
                         <h2>{{ $selectedUser->name }}</h2>
                         <p>{{ $selectedUser->member_id }}</p>
                     </div>
-                    <div class="grid grid-2" style="min-width:min(100%,420px)">
+                    <div class="grid grid-2" style="min-width: min(100%, 420px); flex-shrink: 0;">
                         <div class="kpi">
                             <div class="label">Savings Total</div>
                             <div class="value">{{ number_format((float) ($financialSummary['savings_total'] ?? 0), 2) }}</div>

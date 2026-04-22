@@ -16,12 +16,12 @@
         @if ($isMemberView)
             <section class="hero">
                 <div class="hero-top">
-                    <div>
+                    <div style="flex: 1; min-width: 0;">
                         <div class="hero-kicker">My Contribution</div>
                         <h2>My Invested Amount</h2>
                         <p>Your investment transactions recorded by admin/finance.</p>
                     </div>
-                    <div class="kpi" style="min-width:min(100%,260px)">
+                    <div class="kpi" style="min-width: min(100%, 260px); flex-shrink: 0;">
                         <div class="label">Total Invested</div>
                         <div class="value">{{ number_format((float) ($investedTotal ?? 0), 2) }}</div>
                         <div class="note">Sum of your investment entries</div>
@@ -32,7 +32,7 @@
 
         <section class="panel">
             <form method="GET" action="{{ route('transactions.index') }}" class="grid grid-4">
-                @if (! $isMemberView)
+                @if (!$isMemberView)
                     <select name="type" class="select">
                         <option value="">All types</option>
                         @foreach ($types as $type)
@@ -47,7 +47,8 @@
                         @endforeach
                     </select>
                 @else
-                    <div class="muted" style="grid-column: 1 / span 2; align-self: center;">Showing your investment records only.</div>
+                    <div class="muted" style="grid-column: 1 / -1; align-self: center;">Showing your investment records only.
+                    </div>
                 @endif
                 <input type="date" name="from" value="{{ request('from') }}" class="input">
                 <input type="date" name="to" value="{{ request('to') }}" class="input">
@@ -58,7 +59,8 @@
         @if ($canWrite)
             <section class="panel">
                 <h3 class="section-title">Add Member Money (Cash Collection)</h3>
-                <p class="muted" style="margin-top:-8px;margin-bottom:12px">Use this to record physical cash received from any member.</p>
+                <p class="muted" style="margin-top:-8px;margin-bottom:12px">Use this to record physical cash received from any
+                    member.</p>
                 <form method="POST" action="{{ route('transactions.store') }}" class="grid grid-4">
                     @csrf
                     <select name="user_id" class="select" required>
@@ -73,7 +75,8 @@
                     </select>
                     <input type="number" name="amount" min="0.01" step="0.01" placeholder="Amount" class="input" required>
                     <input type="date" name="date" value="{{ now()->toDateString() }}" class="input" required>
-                    <input type="text" name="note" placeholder="Receipt note (optional)" class="input" style="grid-column:1 / -1">
+                    <input type="text" name="note" placeholder="Receipt note (optional)" class="input"
+                        style="grid-column:1 / -1">
                     <button type="submit" class="primary-btn" style="grid-column:1 / -1">Record Money Entry</button>
                 </form>
             </section>
@@ -119,7 +122,8 @@
                                         <details>
                                             <summary class="pill pill-blue" style="cursor:pointer">Adjust</summary>
                                             <div style="margin-top:10px" class="stack">
-                                                <p class="muted" style="font-size:12px;margin:0 0 8px">Transactions are immutable. Create an adjustment to correct this entry.</p>
+                                                <p class="muted" style="font-size:12px;margin:0 0 8px">Transactions are immutable.
+                                                    Create an adjustment to correct this entry.</p>
                                                 <form method="POST" action="{{ route('transactions.adjust', $tx) }}" class="stack">
                                                     @csrf
                                                     <input type="hidden" name="date" value="{{ now()->toDateString() }}">

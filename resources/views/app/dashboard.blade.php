@@ -23,8 +23,8 @@
         <style>
             .compact-hero {
                 display: grid;
-                grid-template-columns: 1.5fr 1fr;
-                gap: 14px;
+                grid-template-columns: repeat(auto-fit, minmax(clamp(200px, 90vw, 100%), 1fr));
+                gap: clamp(10px, 2vw, 14px);
                 align-items: stretch;
             }
 
@@ -32,47 +32,50 @@
                 border-radius: var(--radius-lg);
                 border: 1px solid var(--line);
                 background: linear-gradient(135deg, rgba(24, 39, 67, 0.86), rgba(11, 20, 36, 0.92));
-                padding: 18px;
+                padding: clamp(14px, 3vw, 18px);
                 box-shadow: var(--shadow-soft);
             }
 
             .compact-intro h2 {
                 margin: 4px 0 8px;
-                font-size: 24px;
+                font-size: clamp(18px, 4vw, 24px);
                 line-height: 1.2;
+                word-break: break-word;
             }
 
             .compact-meta {
                 display: flex;
                 flex-wrap: wrap;
-                gap: 8px;
-                margin: 0 0 14px;
+                gap: clamp(6px, 1vw, 8px);
+                margin: 0 0 12px;
                 color: var(--muted);
-                font-size: 12px;
+                font-size: clamp(11px, 1.5vw, 12px);
                 font-weight: 700;
             }
 
             .status-pills {
                 display: flex;
-                gap: 8px;
+                gap: clamp(6px, 1vw, 8px);
                 flex-wrap: wrap;
-                margin-bottom: 14px;
+                margin-bottom: 12px;
             }
 
             .pill {
                 border-radius: 999px;
                 border: 1px solid var(--line);
-                padding: 6px 10px;
-                font-size: 12px;
+                padding: clamp(4px, 1vw, 6px) clamp(8px, 2vw, 10px);
+                font-size: clamp(10px, 1.5vw, 12px);
                 font-weight: 800;
                 letter-spacing: .03em;
                 color: #d8e8ff;
                 background: rgba(76, 169, 255, 0.1);
+                white-space: nowrap;
+                flex-shrink: 0;
             }
 
             .compact-actions {
                 display: flex;
-                gap: 8px;
+                gap: clamp(6px, 1vw, 8px);
                 flex-wrap: wrap;
             }
 
@@ -84,10 +87,14 @@
                 border: 1px solid var(--line);
                 color: #def0ff;
                 background: rgba(76, 169, 255, 0.12);
-                padding: 8px 12px;
-                font-size: 12px;
+                padding: clamp(6px, 1vw, 8px) clamp(10px, 2vw, 12px);
+                font-size: clamp(11px, 1.5vw, 12px);
                 font-weight: 800;
                 transition: .2s ease;
+                min-height: 44px;
+                cursor: pointer;
+                flex: 1;
+                min-width: clamp(80px, 40vw, 100%);
             }
 
             .action-chip:hover {
@@ -98,7 +105,7 @@
             .compact-focus {
                 border-radius: var(--radius-lg);
                 border: 1px solid var(--line);
-                padding: 16px;
+                padding: clamp(12px, 3vw, 16px);
                 background: rgba(15, 24, 44, 0.9);
                 box-shadow: var(--shadow-soft);
             }
@@ -106,27 +113,31 @@
             .focus-head {
                 display: flex;
                 justify-content: space-between;
-                align-items: center;
-                gap: 10px;
+                align-items: flex-start;
+                gap: clamp(8px, 2vw, 10px);
                 margin-bottom: 10px;
+                flex-wrap: wrap;
             }
 
             .focus-head h3 {
                 margin: 0;
-                font-size: 15px;
+                font-size: clamp(12px, 2vw, 15px);
                 letter-spacing: .04em;
                 text-transform: uppercase;
                 color: #cae3ff;
+                flex: 1;
             }
 
             .tone {
                 border-radius: 999px;
-                padding: 4px 10px;
-                font-size: 11px;
+                padding: clamp(3px, 1vw, 4px) clamp(8px, 2vw, 10px);
+                font-size: clamp(10px, 1.5vw, 11px);
                 font-weight: 800;
                 text-transform: uppercase;
                 letter-spacing: .05em;
                 border: 1px solid var(--line);
+                white-space: nowrap;
+                flex-shrink: 0;
             }
 
             .tone-ok {
@@ -149,7 +160,7 @@
 
             .mini-bar {
                 width: 100%;
-                height: 10px;
+                height: 8px;
                 border-radius: 999px;
                 border: 1px solid var(--line);
                 background: rgba(255, 255, 255, 0.06);
@@ -165,21 +176,21 @@
 
             .focus-note {
                 margin: 0;
-                font-size: 12px;
+                font-size: clamp(11px, 1.5vw, 12px);
                 color: var(--muted);
                 line-height: 1.45;
             }
 
             .smart-grid {
                 display: grid;
-                grid-template-columns: repeat(4, minmax(0, 1fr));
-                gap: 10px;
+                grid-template-columns: repeat(auto-fit, minmax(clamp(120px, 40vw, 100%), 1fr));
+                gap: clamp(8px, 2vw, 10px);
             }
 
             .data-card {
                 border-radius: 14px;
                 border: 1px solid var(--line);
-                padding: 12px;
+                padding: clamp(10px, 2vw, 12px);
                 background: rgba(18, 27, 49, 0.7);
             }
 
@@ -188,13 +199,14 @@
             }
 
             .data-card .value {
-                font-size: 20px;
+                font-size: clamp(16px, 4vw, 20px);
                 line-height: 1.2;
+                font-weight: 700;
             }
 
             .accordion-stack {
                 display: grid;
-                gap: 10px;
+                gap: clamp(8px, 2vw, 10px);
                 margin-top: 12px;
             }
 
@@ -209,12 +221,14 @@
                 list-style: none;
                 cursor: pointer;
                 display: grid;
-                grid-template-columns: 1.4fr auto auto auto;
-                gap: 10px;
+                grid-template-columns: 1fr;
+                gap: clamp(6px, 1vw, 10px);
                 align-items: center;
-                padding: 12px 14px;
+                padding: clamp(10px, 2vw, 12px) clamp(10px, 2vw, 14px);
                 font-weight: 800;
                 color: #dbeaff;
+                font-size: clamp(12px, 1.5vw, 13px);
+                min-height: 44px;
             }
 
             .admin-accordion summary::-webkit-details-marker {
@@ -222,16 +236,18 @@
             }
 
             .acc-pill {
-                font-size: 11px;
-                padding: 4px 8px;
+                font-size: clamp(10px, 1.5vw, 11px);
+                padding: clamp(3px, 1vw, 4px) clamp(6px, 1vw, 8px);
                 border-radius: 999px;
                 border: 1px solid var(--line);
                 color: #cbe4ff;
                 background: rgba(76, 169, 255, 0.14);
+                white-space: nowrap;
+                flex-shrink: 0;
             }
 
             .acc-toggle {
-                font-size: 11px;
+                font-size: clamp(10px, 1.5vw, 11px);
                 letter-spacing: .04em;
                 text-transform: uppercase;
                 color: var(--muted);
@@ -247,7 +263,7 @@
 
             .accordion-body {
                 border-top: 1px solid var(--line);
-                padding: 10px;
+                padding: clamp(8px, 2vw, 10px);
                 display: grid;
                 gap: 8px;
             }
@@ -255,13 +271,13 @@
             .list-head,
             .list-row {
                 display: grid;
-                grid-template-columns: 1.6fr 1fr .8fr;
-                gap: 10px;
-                align-items: center;
+                grid-template-columns: 1fr;
+                gap: 4px;
+                align-items: flex-start;
             }
 
             .list-head {
-                font-size: 11px;
+                font-size: clamp(10px, 1.5vw, 11px);
                 text-transform: uppercase;
                 letter-spacing: .06em;
                 color: var(--muted);
@@ -270,15 +286,24 @@
             }
 
             .list-row {
-                padding: 10px 12px;
+                padding: clamp(8px, 2vw, 10px) clamp(10px, 2vw, 12px);
                 border: 1px solid var(--line);
                 border-radius: 10px;
                 background: rgba(255, 255, 255, 0.02);
-                font-size: 13px;
+                font-size: clamp(12px, 1.5vw, 13px);
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                align-items: center;
+            }
+
+            .list-row>* {
+                flex: 1;
+                min-width: 120px;
             }
 
             .list-row .amount {
-                text-align: right;
+                text-align: left;
                 font-weight: 800;
                 color: #cbf0dd;
             }
@@ -291,7 +316,7 @@
 
             .admin-note {
                 margin: 8px 0 0;
-                font-size: 12px;
+                font-size: clamp(11px, 1.5vw, 12px);
                 color: var(--muted);
             }
 
@@ -299,50 +324,47 @@
                 border: 1px solid var(--line);
                 border-radius: 12px;
                 background: rgba(22, 31, 54, 0.7);
-                padding: 12px;
+                padding: clamp(10px, 2vw, 12px);
                 margin-top: 12px;
             }
 
             .inline-deposit h4 {
                 margin: 0 0 8px;
-                font-size: 13px;
+                font-size: clamp(12px, 1.5vw, 13px);
                 letter-spacing: .04em;
                 text-transform: uppercase;
                 color: #cae3ff;
             }
 
-            @media (max-width: 1080px) {
-                .compact-hero {
-                    grid-template-columns: 1fr;
-                }
-
-                .smart-grid {
-                    grid-template-columns: repeat(2, minmax(0, 1fr));
-                }
-            }
-
-            @media (max-width: 620px) {
-                .smart-grid {
-                    grid-template-columns: 1fr;
-                }
-
-                .compact-intro h2 {
-                    font-size: 20px;
-                }
-
+            @media (min-width: 640px) {
                 .admin-accordion summary {
-                    grid-template-columns: 1fr;
-                    gap: 8px;
+                    grid-template-columns: 1.4fr auto auto auto;
                 }
 
                 .list-head,
                 .list-row {
-                    grid-template-columns: 1fr;
-                    gap: 4px;
+                    grid-template-columns: 1.6fr 1fr .8fr;
+                    gap: 10px;
+                    align-items: center;
                 }
 
-                .list-row .amount {
-                    text-align: left;
+                .list-row {
+                    display: grid;
+                }
+
+                .list-row>* {
+                    flex: unset;
+                    min-width: unset;
+                }
+            }
+
+            @media (min-width: 1024px) {
+                .compact-hero {
+                    grid-template-columns: 1.5fr 1fr;
+                }
+
+                .smart-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
                 }
             }
         </style>
